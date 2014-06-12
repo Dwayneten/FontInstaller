@@ -14,8 +14,9 @@ class gui:
 		window.title('Font Installer 1.10')
 		# size
 		window.geometry('450x280')
+		window.resizable(width = FALSE, height = TRUE)
 		# icon
-		#window.iconbitmap()
+		window.iconbitmap('FontInstaller.ico')
 		
 		# menu bar
 		menubar = Menu(window)

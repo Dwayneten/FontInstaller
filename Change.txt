@@ -1,4 +1,10 @@
 --------------------------------------------------
+ver 1.13
+Add:
+1.Add icon.
+Improve:
+1.Set width resizable to false.
+--------------------------------------------------
 ver 1.12
 Improve:
 1.Auto scroll down when infomation update.
