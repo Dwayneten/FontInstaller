@@ -1,3 +1,8 @@
+--------------------------------------------------
+ver 1.12
+Improve:
+1.Auto scroll down when infomation update.
+--------------------------------------------------
 ver 1.10
 Add:
 1.Add counter.
@@ -7,3 +12,4 @@ Improve:
 3.Remove vbs infomation.
 Fix:
 1.Error occurs when delete files.
+--------------------------------------------------

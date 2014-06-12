@@ -112,6 +112,7 @@ class gui:
 					if sufix == 'zip' or sufix == 'ZIP':
 						self.info.insert(END, 'Extracted: '+fn+'\n')
 						self.info.update()
+						self.info.yview(END)
 						f = zipfile.ZipFile(root+'\\'+fn)
 						if self.judTarget.get():
 							f.extractall(self.targetPath.get()+'\\')
@@ -120,6 +121,8 @@ class gui:
 						self.couterExtracted += 1
 		self.info.insert(END, '-'*50+'\n')
 		self.info.insert(END, 'Extracted'+' '+str(self.couterExtracted)+' Zips.'+'\n')
+		self.info.update()
+		self.info.yview(END)
 
 	def install(self):
 		"""Install fonts from fontPath"""
@@ -145,6 +148,7 @@ class gui:
 					os.system('Installfont.vbs'+' '+temp+'\\'+fn)
 					self.info.insert(END, 'Installed: '+fn+'\n')
 					self.info.update()
+					self.info.yview(END)
 					couterInstalled += 1
 				elif sufix == 'zip' or sufix == 'ZIP' or sufix == 'rar' or sufix == 'RAR':
 					pass
@@ -152,11 +156,13 @@ class gui:
 					os.remove(root+'\\'+fn)
 					self.info.insert(END, 'Deleted: '+fn+'\n')
 					self.info.update()
+					self.info.yview(END)
 					couterDeleted += 1
 		self.info.insert(END, '-'*50+'\n')
 		self.info.insert(END, 'Installed'+' '+str(couterInstalled)+' Fonts.'+'\n')
 		self.info.insert(END, 'Deleted'+' '+str(couterDeleted)+' Files.'+'\n')
 		self.info.update()
+		self.info.yview(END)
 
 	def dialogAbout(self):
 		pass
