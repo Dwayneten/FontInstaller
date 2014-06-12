@@ -1,0 +1,9 @@
+ver 1.10
+Add:
+1.Add counter.
+Improve:
+1.Change usage text color.
+2.Update infomation after each operation by one line.
+3.Remove vbs infomation.
+Fix:
+1.Error occurs when delete files.
