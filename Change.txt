@@ -1,4 +1,17 @@
 --------------------------------------------------
+ver 1.30
+Add:
+1.Pick up function.
+2.Check path and show error function.
+Improve:
+1.Change tips.
+2.Change infomation format.
+3.Change help document.
+4.Change about infomation.
+Fix:
+1.Remove useless variable and operation in install function.
+2.Remove readonly state of path selector.
+--------------------------------------------------
 ver 1.20
 Add:
 1.About window.

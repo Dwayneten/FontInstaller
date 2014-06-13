@@ -1,10 +1,11 @@
 import os
 import os.path
+import shutil
 import zipfile
 import re
+import tkinter.messagebox
 from tkinter import *
 from tkinter.filedialog import *
-from shutil import *
 
 class gui:
 	"""the gui of FontInstaller"""
@@ -26,6 +27,8 @@ class gui:
 		menubar.add_cascade(label = "Extract", command = self.extract)
 		# install
 		menubar.add_cascade(label = "Install", command = self.install)
+		# pick
+		menubar.add_cascade(label = "Pick", command = self.pickup)
 		# other menu
 		menubar.add_cascade(label = "Other", menu = aboutMenu)
 		aboutMenu.add_command(label = "Help", command = self.dialogHelp)
@@ -47,7 +50,7 @@ class gui:
 		labelFont = Label(frameFont, text = "Font root path:")
 		self.fontPath = StringVar()
 		self.fontPath.set('Unselected')
-		self.entryFont = Entry(frameFont, textvariable = self.fontPath, state = 'readonly')
+		self.entryFont = Entry(frameFont, textvariable = self.fontPath)
 		btFont = Button(frameFont, text = "Browse", command = self.fontPathSelect)
 		# widget grid
 		labelFont.grid(row = 1, column = 0, sticky = W, padx = 10, pady = 20)
@@ -59,27 +62,31 @@ class gui:
 		frameTarget.pack()
 		labelTarget = Label(frameTarget, text = "Target root path:")
 		self.targetPath = StringVar()
-		self.targetPath.set('C:\Windows\Fonts')
-		self.entryTarget = Entry(frameTarget, textvariable = self.targetPath, state = 'readonly')
+		self.targetPath.set('Unselected')
+		self.entryTarget = Entry(frameTarget, textvariable = self.targetPath)
 		btTarget = Button(frameTarget, text = "Browse", command = self.targetPathSelector)
 		# widget grid
 		labelTarget.grid(row = 1, column = 0, sticky = W, padx = 3)
 		self.entryTarget.grid(row = 1, column = 1, sticky = W, padx = 3, ipadx = 50)
-		btTarget.grid(row = 1, column = 2, sticky = W)
+		btTarget.grid(row = 1, column = 2, pady = 5, sticky = W)
 
 
 		# Control
 		frameControl = Frame(window)
 		frameControl.pack()
 		self.judTarget = IntVar()
-		self.judTarget.set(0)
+		self.judTarget.set(1)
 		cbTarget = Checkbutton(frameControl, text = "Extract to target folder", variable = self.judTarget)
 		self.judDelete = IntVar()
 		self.judDelete.set(1)
 		cbDelete = Checkbutton(frameControl, text = "Delete other files", variable = self.judDelete)
+		self.judRemove = IntVar()
+		self.judRemove.set(0)
+		cbRemove = Checkbutton(frameControl, text = "Remove original font files", variable = self.judRemove)
 		# widget grid
-		cbTarget.grid(row = 1, column = 1, padx = 20, pady = 10)
-		cbDelete.grid(row = 1, column = 2, padx = 20)
+		cbTarget.grid(row = 0, column = 0, sticky = W)
+		cbDelete.grid(row = 0, column = 1, padx  = 10, sticky = W)
+		cbRemove.grid(row = 1, sticky = W)
 
 		# infomation
 		frameInfo = Frame(window)
@@ -91,7 +98,7 @@ class gui:
 		self.info.config(font = 'Courier 10')
 		self.info.tag_config('blue', foreground = 'blue')
 		self.info.insert(END, '-'*50+'\n')
-		self.info.insert(END, 'Pleae backup before use.\nUseage:\n1.Select font root path.\n2.Select target root path.\n3.Extract or Install.\n', 'blue')
+		self.info.insert(END, '!Pleae backup before use!\nInstall:\nSelect font root path.\nExtract or Pick:\nSelect font root path as well as target path.\n', 'blue')
 		self.info.insert(END, '-'*50+'\n')
 		scrollbar.config(command = self.info.yview)
 
@@ -101,25 +108,29 @@ class gui:
 		"""Extract fonts from fontPath"""
 		
 		self.couterExtracted = 0
-		if not os.path.isdir(self.targetPath.get()):
-			os.makedirs(self.targetPath.get())
+		# judge fontpath
 		fontPath = self.fontPath.get()
-		if not os.path.isdir(fontPath):
-			pass
-		else:
-			for root, dirs, files in os.walk(fontPath):
-				for fn in files:
-					sufix = os.path.splitext(fn)[1][1:]
-					if sufix == 'zip' or sufix == 'ZIP':
-						self.info.insert(END, 'Extracted: '+fn+'\n')
-						self.info.update()
-						self.info.yview(END)
-						f = zipfile.ZipFile(root+'\\'+fn)
-						if self.judTarget.get():
-							f.extractall(self.targetPath.get()+'\\')
-						else:
-							f.extractall(root+'\\')
-						self.couterExtracted += 1
+		if not os.path.exists(fontPath):
+			self.errorFontpath()
+			return
+		# judge targetpath
+		targetPath = self.targetPath.get()
+		if not os.path.exists(targetPath):
+			os.makedirs(targetPath)
+		# extract
+		for root, dirs, files in os.walk(fontPath):
+			for fn in files:
+				sufix = os.path.splitext(fn)[1][1:]
+				if sufix == 'zip' or sufix == 'ZIP':
+					f = zipfile.ZipFile(root+'/'+fn)
+					if self.judTarget.get():
+						f.extractall(targetPath)
+					else:
+						f.extractall(root)
+					self.info.insert(END, 'Extracted: '+root+'/'+fn+'\n')
+					self.info.update()
+					self.info.yview(END)
+					self.couterExtracted += 1
 		self.info.insert(END, '-'*50+'\n')
 		self.info.insert(END, 'Extracted'+' '+str(self.couterExtracted)+' Zips.'+'\n')
 		self.info.update()
@@ -130,12 +141,11 @@ class gui:
 
 		couterInstalled = 0
 		couterDeleted = 0
+		# judge fontpath
 		fontPath = self.fontPath.get()
-		if self.judTarget.get():
-			fontPath = self.targetPath.get() 
-		targetPath = self.targetPath.get()
-		if not os.path.isdir(targetPath):
-			os.makedirs(targetPath)
+		if not os.path.exists(fontPath):
+			self.errorFontpath()
+			return
 		for root, dirs, files in os.walk(fontPath):
 			for fn in files:
 				sufix = os.path.splitext(fn)[1][1:]
@@ -147,7 +157,7 @@ class gui:
 						else:
 							temp += c
 					os.system('Installfont.vbs'+' '+temp+'\\'+fn)
-					self.info.insert(END, 'Installed: '+fn+'\n')
+					self.info.insert(END, 'Installed: '+root+'/'+fn+'\n')
 					self.info.update()
 					self.info.yview(END)
 					couterInstalled += 1
@@ -155,7 +165,7 @@ class gui:
 					pass
 				elif self.judDelete.get():
 					os.remove(root+'\\'+fn)
-					self.info.insert(END, 'Deleted: '+fn+'\n')
+					self.info.insert(END, 'Deleted: '+root+'/'+fn+'\n')
 					self.info.update()
 					self.info.yview(END)
 					couterDeleted += 1
@@ -165,19 +175,57 @@ class gui:
 		self.info.update()
 		self.info.yview(END)
 
+	def pickup(self):
+		"""pick up fonts from fontPath"""
+
+		couterPicked = 0
+		# judge fontpath
+		fontPath = self.fontPath.get()
+		if not os.path.exists(fontPath):
+			self.errorFontpath()
+			return
+		# judge targetpath
+		targetPath = self.targetPath.get()
+		if not os.path.exists(targetPath):
+			os.makedirs(targetPath)
+		# pick up
+		for root, dirs, files in os.walk(fontPath):
+				for fn in files:
+					sufix = os.path.splitext(fn)[1][1:]
+					if sufix == 'ttf' or sufix == 'TTF' or sufix == 'otf' or sufix == 'OTF':
+						if self.judRemove.get():
+							shutil.copy(root+'/'+fn, targetPath)
+							os.remove(root+'/'+fn)
+							self.info.insert(END, 'Picked and Deleted: '+root+'/'+fn+'\n')
+						else:
+							shutil.copy(root+'/'+fn, targetPath)
+							self.info.insert(END, 'Picked: '+root+'/'+fn+'\n')
+						self.info.update()
+						self.info.yview(END)
+						couterPicked += 1
+		self.info.insert(END, '-'*50+'\n')
+		self.info.insert(END, 'Picked '+str(couterPicked)+' Fonts.'+'\n')
+		self.info.update()
+		self.info.yview(END)
+
 	def dialogAbout(self):
 		about = Tk()
 		about.resizable(width = FALSE, height = FALSE)
 		about.title('About')
 		about.iconbitmap('FontInstaller.ico')
-		Label(about, text = '\n\nFontInstaller ver '+version+'\nA simple tool for install some fonts from selected folder.\n\nCoding by Dwayne @2014\nThanks for SkyWind about the usage of vbs.\n\n').pack(ipadx = 20)
+		Label(about, text = '\n\nFontInstaller ver '+version+'\nA simple tool for install some fonts from selected folder.\n\nThanks for SkyWind about the usage of vbs.\nCoding by Dwayne @2014\nIf you find any bugs please contact me:\nDwayne@loliplus.com\n\n').pack(ipadx = 20)
 
 	def dialogHelp(self):
 		help = Tk()
 		help.resizable(width = FALSE, height = FALSE)
 		help.title('Help')
 		help.iconbitmap('FontInstaller.ico')
-		Label(help, text = '\n\nPleae backup before use.\n\n1.Select font root path.\n2.Select target root path.\n3.Extract or Install.\n\n').pack(ipadx = 20)
+		Label(help, text = '\n\nHere are three function in this FontInstaller.\n').grid(ipadx = 20, sticky = W)
+		Label(help, text = '1.Install .ttf/.otf fonts from selected folder.').grid(ipadx = 20, sticky = W)
+		Label(help, text = '2.Extract font files which in the zipfile to origin/target folder.').grid(ipadx = 20, sticky = W)
+		Label(help, text = '3.Pick up font files from font folder to target folder.\n').grid(ipadx = 20, sticky = W)
+		Label(help, text = 'Install only needs FontPath while both Extract and Pick need TargetPath as well as FontPath.').grid(ipadx = 20, sticky = W)
+		Label(help, text = 'Backup before use to avoid unexpect error.\n\n', fg = 'blue').grid(ipadx = 20, sticky = W)
 
 	def popup(self, event):
 		"""Popup menu"""
@@ -196,5 +244,16 @@ class gui:
 		targetPath = askdirectory(initialdir="/",title='Pick a directory')
 		self.targetPath.set(targetPath)
 
+	def errorFontpath(self):
+		"""fontpath incorrect"""
+
+		tkinter.messagebox.showerror("Error", "Font root path incorrect!")
+
+	def errorTargetpath(self):
+		"""targetpath incorrect"""
+
+		tkinter.messagebox.showerror("Error", "Target root path incorrect!")
+
 version = str(1.20)
-gui()
+if __name__ == '__main__':
+	gui()
