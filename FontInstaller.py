@@ -11,7 +11,7 @@ class gui:
 	def __init__(self):
 		window = Tk()
 		# title
-		window.title('Font Installer 1.10')
+		window.title('Font Installer '+version)
 		# size
 		window.geometry('450x280')
 		window.resizable(width = FALSE, height = TRUE)
@@ -166,10 +166,18 @@ class gui:
 		self.info.yview(END)
 
 	def dialogAbout(self):
-		pass
+		about = Tk()
+		about.resizable(width = FALSE, height = FALSE)
+		about.title('About')
+		about.iconbitmap('FontInstaller.ico')
+		Label(about, text = '\n\nFontInstaller ver '+version+'\nA simple tool for install some fonts from selected folder.\n\nCoding by Dwayne @2014\nThanks for SkyWind about the usage of vbs.\n\n').pack(ipadx = 20)
 
 	def dialogHelp(self):
-		pass
+		help = Tk()
+		help.resizable(width = FALSE, height = FALSE)
+		help.title('Help')
+		help.iconbitmap('FontInstaller.ico')
+		Label(help, text = '\n\nSorry.\nHelp document is not ready in current version.\n\n').pack(ipadx = 20)
 
 	def popup(self, event):
 		"""Popup menu"""
@@ -188,4 +196,5 @@ class gui:
 		targetPath = askdirectory(initialdir="/",title='Pick a directory')
 		self.targetPath.set(targetPath)
 
+version = str(1.13)
 gui()
