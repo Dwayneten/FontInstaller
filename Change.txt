@@ -1,4 +1,11 @@
 --------------------------------------------------
+ver 1.20
+Add:
+1.About window.
+2.Help window.
+Improve:
+1.Use string variable to control version number.
+--------------------------------------------------
 ver 1.13
 Add:
 1.Add icon.
