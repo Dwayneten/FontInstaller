@@ -1,3 +1,4 @@
 FontInstaller
 =============
-A simple tool for install some fonts from selected folder.
+A simple tool that including three operations about fonts:
+Extract, Install, Pick up.
